@@ -21,8 +21,8 @@ const getUser = async (req, res) => {
 // get single user's details
 const getSingleUser = async (req, res) => {
   try {
-    const { id } = req.params;
-    const singleUser = await User.findById(id);
+    const { uid } = req.params;
+    const singleUser = await User.findOne({ uid });
     res.status(200).json({
       users: singleUser,
     });
@@ -34,11 +34,35 @@ const getSingleUser = async (req, res) => {
 // create and post a new user to DB
 const createUser = async (req, res) => {
   try {
-    const { name, email, role, companyName } = req.body;
-    const newUsers = new User({ name, email, role, companyName });
+    const { uid, name, email, role, companyName } = req.body;
+    const newUsers = new User({ uid, name, email, role, companyName });
     await newUsers.save();
     res.status(200).json({
       users: newUsers,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// get user role by email
+const getUserRoleByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      role: user.role,
+      user,
     });
   } catch (error) {
     console.log(error);
@@ -84,4 +108,11 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getUser, getSingleUser, createUser, updateUser, deleteUser };
+module.exports = {
+  getUser,
+  getUserRoleByEmail,
+  getSingleUser,
+  createUser,
+  updateUser,
+  deleteUser,
+};

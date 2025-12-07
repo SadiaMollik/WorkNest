@@ -30,9 +30,9 @@ const SignUp = () => {
   };
 
   const passwordRequirements = [
-    { text: "At least 8 characters", met: formData.password.length >= 8 },
+    { text: "At least 6 characters", met: formData.password.length >= 6 },
     { text: "One uppercase letter", met: /[A-Z]/.test(formData.password) },
-    { text: "One number", met: /[0-9]/.test(formData.password) },
+    { text: "One number", met: /[0-6]/.test(formData.password) },
     {
       text: "One special character",
       met: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
@@ -72,6 +72,7 @@ const SignUp = () => {
 
       //  User data for backend
       const userData = {
+        uid: user.uid,
         name: formData.name,
         email: formData.email,
         companyName: formData.companyName,

@@ -1,11 +1,26 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import { Eye, EyeOff, Building2, Lock } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import { AuthContext } from "../contexts/AuthContext";
 
 const Login = () => {
+  const { signInUser } = use(AuthContext);
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    try {
+      await signInUser(email, password);
+      navigate(location?.state || "/");
+    } catch (error) {
+      console.error("Sign-in failed:", error);
+    }
+  };
 
   return (
     <section className="fix-alignment ">
@@ -112,8 +127,11 @@ const Login = () => {
                   </div>
 
                   {/* Sign In Button */}
-                  <button className="w-full bg-primary text-primary-foreground font-semibold py-4 rounded-lg hover:bg-primary-hover transition-colors duration-200 mt-6 h-14 shadow-lg hover:shadow-xl">
-                    Sign In
+                  <button
+                    onClick={handleSignIn}
+                    className="w-full bg-primary text-primary-foreground font-semibold py-4 rounded-lg hover:bg-primary-hover transition-colors duration-200 mt-6 h-14 shadow-lg hover:shadow-xl"
+                  >
+                    Login
                   </button>
 
                   {/* Sign Up Link */}

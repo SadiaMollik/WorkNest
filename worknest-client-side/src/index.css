@@ -93,5 +93,8 @@
   @apply cursor-pointer overflow-hidden rounded-lg h-10 px-5 bg-primary text-white text-base font-semibold hover:bg-primary/90 transition-colors;
 }
 .btn-secondary {
+  @apply cursor-pointer overflow-hidden rounded-lg h-10 px-5 bg-secondary text-white text-base font-semibold hover:bg-secondary/90 transition-colors;
+}
+.btn-accent {
   @apply cursor-pointer overflow-hidden rounded-lg h-10 px-5 bg-accent text-white text-base font-semibold hover:bg-accent/90 transition-colors;
 }
