@@ -5,6 +5,7 @@ const app = express();
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const workspaceRoutes = require("./routes/workspaceRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 const port = process.env.PORT || 3000;
 
 app.use(cors());
@@ -22,6 +23,9 @@ app.use(userRoutes);
 
 // all routes for wrokspace -
 app.use("/dashboard", workspaceRoutes); // api endpoint --> /dashboard/routes
+
+// all routes for analytics
+app.use("/dashboard", analyticsRoutes);
 
 app.listen(port, () => {
   console.log(`WorkNest is running on port: ${port}`);

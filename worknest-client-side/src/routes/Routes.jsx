@@ -60,7 +60,7 @@ export const router = createBrowserRouter([
         Component: MyBookings,
       },
       {
-        path: "/dashboard/analytics",
+        path: "/analytics",
         Component: Analytics,
       },
       {
