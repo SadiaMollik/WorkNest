@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
+
 const userRoutes = require("./routes/userRoutes");
 const workspaceRoutes = require("./routes/workspaceRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
@@ -13,6 +14,7 @@ const app = express();
 // Connect to database
 connectDB();
 
+// Middleware
 // Middleware
 app.use(cors());
 app.use(express.json());
