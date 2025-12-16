@@ -34,7 +34,6 @@ const DashboardHome = () => {
   const { notifications, markAsRead, showNotification } = useNotifications();
 
   useEffect(() => {
-    // Determine time of day for greeting
     const hour = new Date().getHours();
     if (hour < 12) setTimeOfDay("morning");
     else if (hour < 18) setTimeOfDay("afternoon");
@@ -43,7 +42,7 @@ const DashboardHome = () => {
     if (!uid) return;
 
     axios
-      .get(`http://localhost:3000/users/${uid}`)
+      .get(`http://localhost:3000/api/users/${uid}`)
       .then((res) => {
         console.log("Fetched user data:", res.data);
         setUserData(res.data.users);
@@ -54,7 +53,6 @@ const DashboardHome = () => {
     setLoading(false);
   }, [uid]);
 
-  // Common stats for all users
   const commonStats = [
     {
       label: "Available Desks",

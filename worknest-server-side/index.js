@@ -1,32 +1,29 @@
-require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const app = express();
 const connectDB = require("./config/db");
+
 const userRoutes = require("./routes/userRoutes");
 const workspaceRoutes = require("./routes/workspaceRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
-const port = process.env.PORT || 3000;
+const attendanceRoutes = require("./routes/attendanceRoutes");
 
+const app = express();
+
+// Connect to database
+connectDB();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Connect to Database
-connectDB();
+// Routes
+app.use("/api", userRoutes);
+app.use("/api", workspaceRoutes);
+app.use("/api", notificationRoutes);
+app.use("/api", attendanceRoutes);
 
-app.get("/", (req, res) => {
-  res.send("WorkNest - Optimize Your Hybrid Workspace Effortlessly");
-});
+const PORT = process.env.PORT || 5000;
 
-// all routes for users
-app.use(userRoutes);
-
-// all routes for wrokspace -
-app.use("/dashboard", workspaceRoutes); // api endpoint --> /dashboard/routes
-
-// all routes for notifications
-app.use("/api/notifications", notificationRoutes);
-
-app.listen(port, () => {
-  console.log(`WorkNest is running on port: ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

@@ -28,6 +28,10 @@ const UserSchema = new Schema(
       required: true,
       maxlength: 30,
     },
+    profileCompleted: {
+      type: Boolean,
+      default: false,
+    },
     createdAt: {
       type: Date,
       default: Date.now,

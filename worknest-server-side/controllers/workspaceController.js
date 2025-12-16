@@ -32,7 +32,6 @@ const createWorkspace = async (req, res) => {
   }
 };
 
-// get all workspaces list
 const getAllWorkspaces = async (req, res) => {
   try {
     const allWorkspaces = await Workspace.find();

@@ -1,6 +1,7 @@
 const Notification = require("../models/notificationModel");
+const User = require("../models/userModel");
+const { sendEmail } = require("../utils/emailService");
 
-// Get all notifications for a user
 const getNotifications = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -13,7 +14,7 @@ const getNotifications = async (req, res) => {
   }
 };
 
-// Create a new notification
+
 const createNotification = async (req, res) => {
   try {
     const { userId, type, title, message, bookingId, scheduledAt } = req.body;
@@ -26,13 +27,21 @@ const createNotification = async (req, res) => {
       scheduledAt,
     });
     await notification.save();
+
+    // Send email notification for booking type
+    if (type === "booking") {
+      const user = await User.findOne({ uid: userId });
+      if (user && user.email) {
+        await sendEmail(user.email, title, message);
+      }
+    }
+
     res.status(201).json(notification);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Mark notification as read
 const markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
@@ -50,7 +59,6 @@ const markAsRead = async (req, res) => {
   }
 };
 
-// Delete a notification
 const deleteNotification = async (req, res) => {
   try {
     const { id } = req.params;
@@ -64,7 +72,6 @@ const deleteNotification = async (req, res) => {
   }
 };
 
-// Get unread notifications count
 const getUnreadCount = async (req, res) => {
   try {
     const { userId } = req.params;

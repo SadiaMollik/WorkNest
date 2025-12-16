@@ -2,9 +2,11 @@ import { use, useState } from "react";
 import { Eye, EyeOff, Building2, Lock } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AuthContext } from "../contexts/AuthContext";
+import { useNotification } from "../contexts/NotificationContext";
 
 const Login = () => {
   const { signInUser } = use(AuthContext);
+  const { showNotification } = useNotification();
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -16,7 +18,10 @@ const Login = () => {
     e.preventDefault();
     try {
       await signInUser(email, password);
-      navigate(location?.state || "/");
+      showNotification("LOGIN SUCCESSFULLY", "success");
+      setTimeout(() => {
+        navigate(location?.state || "/");
+      }, 2000); // Delay navigation to allow toast to show
     } catch (error) {
       console.error("Sign-in failed:", error);
     }
