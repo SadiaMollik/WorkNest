@@ -32,7 +32,7 @@ const DashboardHome = () => {
   const userRole = role;
   const { user } = use(AuthContext);
   const uid = user?.uid;
-  // const { notifications, markAsRead, showNotification } = useNotifications();
+  //const { notifications, markAsRead, showNotification } = useNotifications();
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -426,7 +426,7 @@ const DashboardHome = () => {
               </h2>
               <Bell className="w-5 h-5 text-muted-foreground" />
             </div>
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
               {notifications.slice(0, 4).map((notification, index) => (
                 <div
                   key={notification._id}
@@ -468,7 +468,7 @@ const DashboardHome = () => {
                   )}
                 </div>
               ))}
-            </div>
+            </div> */}
             <button className="w-full mt-6 py-2.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors border border-primary/20 rounded-lg hover:bg-primary/5">
               View All Notifications
             </button>
