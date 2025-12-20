@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const { sendEmail } = require("../utils/emailService");
 
 const getUser = async (req, res) => {
   try {

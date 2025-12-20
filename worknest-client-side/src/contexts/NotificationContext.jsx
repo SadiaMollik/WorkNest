@@ -19,7 +19,6 @@ export const useNotification = () => {
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
 
-  // Fetch notifications from backend
   const fetchNotifications = async () => {
     try {
       const response = await axios.get("http://localhost:3000/api/notifications");
@@ -29,7 +28,6 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  // Create a new notification
   const createNotification = async (notificationData) => {
     try {
       const response = await axios.post(
@@ -44,33 +42,26 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  // Mark a notification as read
   const markAsRead = async (id) => {
     try {
       await axios.patch(`http://localhost:3000/api/notifications/${id}/read`);
       setNotifications((prev) =>
-        prev.map((notification) =>
-          notification._id === id ? { ...notification, isRead: true } : notification
-        )
+        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
       );
     } catch (error) {
       console.error("Error marking notification as read:", error);
     }
   };
 
-  // Delete a notification
   const deleteNotification = async (id) => {
     try {
       await axios.delete(`http://localhost:3000/api/notifications/${id}`);
-      setNotifications((prev) =>
-        prev.filter((notification) => notification._id !== id)
-      );
+      setNotifications((prev) => prev.filter((n) => n._id !== id));
     } catch (error) {
       console.error("Error deleting notification:", error);
     }
   };
 
-  // Show a toast notification
   const showNotification = (message, type = "info") => {
     switch (type) {
       case "success":
@@ -89,22 +80,21 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  // Fetch notifications on mount
   useEffect(() => {
     fetchNotifications();
   }, []);
 
-  const value = {
-    notifications,
-    fetchNotifications,
-    createNotification,
-    markAsRead,
-    deleteNotification,
-    showNotification,
-  };
-
   return (
-    <NotificationContext.Provider value={value}>
+    <NotificationContext.Provider
+      value={{
+        notifications,
+        fetchNotifications,
+        createNotification,
+        markAsRead,
+        deleteNotification,
+        showNotification,
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   );

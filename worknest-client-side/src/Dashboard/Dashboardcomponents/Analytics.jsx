@@ -19,7 +19,7 @@ const Analytics = () => {
         setLoading(true);
         setError("");
 
-        const res = await fetch("http://localhost:3000/dashboard/analytics/latest");
+        const res = await fetch("http://localhost:3000/api/dashboard/analytics/latest");
         const data = await res.json();
 
         if (!res.ok || !data.success) {
