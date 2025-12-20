@@ -8,7 +8,7 @@ const {
 } = require("../controllers/attendanceController");
 
 router.post("/attendance/checkin", checkIn);
-router.post("/attendance/checkout", checkOut);
+router.put("/attendance/checkout", checkOut);
 router.get("/attendance/:employeeId", getAttendance);
 router.get("/attendance/hours/:employeeId", getTotalHours);
 

@@ -1,20 +1,23 @@
 import { use, useState } from "react";
-import { Eye, EyeOff, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, Mail } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { AuthContext } from "../contexts/AuthContext";
+import { useNotification } from "../contexts/NotificationContext";
 
 const SignUp = () => {
   const { createUser, updateUser, googleSignIn } = use(AuthContext);
+  const { showNotification } = useNotification();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-
+    name: "",
     agreeToTerms: false,
   });
 
@@ -23,14 +26,13 @@ const SignUp = () => {
       ...prev,
       [field]: value,
     }));
-    // Clear error when user starts typing
     if (error) setError("");
   };
 
   const passwordRequirements = [
     { text: "At least 6 characters", met: formData.password.length >= 6 },
     { text: "One uppercase letter", met: /[A-Z]/.test(formData.password) },
-    { text: "One number", met: /[0-6]/.test(formData.password) },
+    { text: "One number", met: /[0-9]/.test(formData.password) },
     {
       text: "One special character",
       met: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
@@ -45,7 +47,6 @@ const SignUp = () => {
       return;
     }
 
-    // Validate password requirements
     const isPasswordValid = passwordRequirements.every((req) => req.met);
     if (!isPasswordValid) {
       setError("Please meet all password requirements");
@@ -75,11 +76,25 @@ const SignUp = () => {
         await axios.post("http://localhost:3000/api/users", {
           uid: user.uid,
           email: user.email,
-          name: user.displayName || "",
+          name: formData.name || "",
           profileCompleted: false,
         });
 
-        navigate("/complete-profile");
+        // Check if user was created successfully
+        if (createResponse.data.success) {
+          setEmailSent(true);
+          showNotification(
+            "🎉 Account created! Check your email for confirmation.",
+            "success"
+          );
+
+          // Navigate after short delay to show the success message
+          setTimeout(() => {
+            navigate("/complete-profile");
+          }, 2000);
+        } else {
+          throw new Error("Failed to create user");
+        }
       } else {
         // if user already exists
         if (!res.data.user.profileCompleted) {
@@ -91,7 +106,20 @@ const SignUp = () => {
     } catch (error) {
       console.error("Signup error:", error);
 
-      setError("Signup failed");
+      let errorMessage = "Signup failed. Please try again.";
+
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage = "This email is already registered. Please login instead.";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password is too weak. Please use a stronger password.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email address.";
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      setError(errorMessage);
+      showNotification(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -113,14 +141,24 @@ const SignUp = () => {
           profileCompleted: false,
         });
 
-        navigate("/complete-profile");
+        if (createResponse.data.success) {
+          showNotification(
+            "🎉 Account created with Google! Check your email.",
+            "success"
+          );
+
+          setTimeout(() => {
+            navigate("/complete-profile");
+          }, 2000);
+        }
       } else {
         res.data.user.profileCompleted
           ? navigate("/dashboard")
           : navigate("/complete-profile");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Google login error:", error);
+      showNotification("Google login failed. Please try again.", "error");
     }
   };
 
@@ -128,6 +166,7 @@ const SignUp = () => {
     return (
       formData.email &&
       formData.password &&
+      formData.name &&
       formData.agreeToTerms &&
       passwordRequirements.every((req) => req.met)
     );
@@ -152,6 +191,21 @@ const SignUp = () => {
               {/* Right Column: Sign Up Form */}
               <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
                 <div className="w-full max-w-md">
+                  {/* Success Message */}
+                  {emailSent && (
+                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start space-x-3">
+                      <Mail className="w-5 h-5 text-green-600 mt-0.5" />
+                      <div>
+                        <p className="text-green-800 text-sm font-medium">
+                          Welcome email sent!
+                        </p>
+                        <p className="text-green-600 text-xs mt-1">
+                          Check your inbox at {formData.email}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Error Message */}
                   {error && (
                     <div className="mb-6 p-4 bg-error/10 border border-error/20 rounded-lg">
@@ -163,11 +217,29 @@ const SignUp = () => {
                     Create Your Account
                   </h1>
                   <p className="text-muted-foreground text-base font-normal pb-8">
-                    Join WorkNest and transform your hybrid workspace
-                    management.
+                    Join WorkNest and transform your hybrid workspace management.
                   </p>
 
                   <form onSubmit={handleSubmit}>
+                    {/* Name Field */}
+                    <div className="flex w-full flex-wrap items-end gap-4 pb-4">
+                      <label className="flex flex-col min-w-40 flex-1 w-full">
+                        <p className="text-foreground text-base font-medium leading-normal pb-2">
+                          Full Name
+                        </p>
+                        <input
+                          className="rounded-lg text-foreground outline-primary/50 bg-card h-14 placeholder:text-muted-foreground p-[15px] text-base border border-border focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-colors duration-200"
+                          placeholder="Enter your full name"
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) =>
+                            handleInputChange("name", e.target.value)
+                          }
+                          required
+                        />
+                      </label>
+                    </div>
+
                     {/* Email Field */}
                     <div className="flex w-full flex-wrap items-end gap-4 pb-4">
                       <label className="flex flex-col min-w-40 flex-1 w-full">
@@ -306,6 +378,7 @@ const SignUp = () => {
                     </div>
                     <button
                       onClick={handleGoogleLogin}
+                      type="button"
                       className="w-full font-semibold py-4 rounded-lg transition-colors duration-200 mt-2 h-14 shadow-lg hover:shadow-xl flex gap-2 items-center justify-center"
                     >
                       <svg

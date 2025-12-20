@@ -107,6 +107,10 @@ export const router = createBrowserRouter([
         path: "/dashboard/profile",
         Component: Profile,
       },
+      {
+        path: "/dashboard/activity",
+        Component: MyActivity,
+      },
     ],
   },
 ]);
