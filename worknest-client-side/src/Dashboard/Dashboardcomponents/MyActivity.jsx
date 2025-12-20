@@ -978,10 +978,12 @@ import { AuthContext } from "../../contexts/AuthContext";
 import axios from "axios";
 
 const MyActivity = () => {
+  const { user } = useContext(AuthContext);
   const [attendanceData, setAttendanceData] = useState([]);
   const [currentStatus, setCurrentStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [userData, setUserData] = useState({});
   const [buttonLoading, setButtonLoading] = useState(false);
   const [selectedWorkMode, setSelectedWorkMode] = useState(null);
@@ -996,16 +998,16 @@ const MyActivity = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/users/${user.uid}`);
+      const response = await axios.get(`http://localhost:3000/users/${user.uid}`);
       setUserData(response.data.users);
       return response.data.users;
     } catch (err) {
       console.error("Error fetching user data:", err);
       setError("Failed to load user data");
+      return {};
     }
   };
 
-  // Fetch attendance data
   const fetchAttendanceData = async () => {
     try {
       console.log("🔄 Fetching attendance data for user:", user.uid);
@@ -1122,12 +1124,23 @@ const MyActivity = () => {
         setError(error.response?.data?.message || "Check-in failed");
       }
     } finally {
-      setLoading(false);
+      setButtonLoading(false);
     }
   };
 
-  // Auto check-out
-  const handleAutoCheckOut = async () => {
+  const handleCheckOut = async () => {
+    if (!user.uid) return;
+
+    if (!currentStatus?.checkInTime) {
+      setError("No check-in record found for today. Please check in first.");
+      return;
+    }
+
+    if (currentStatus?.checkOutTime) {
+      setError("Already checked out today.");
+      return;
+    }
+
     try {
       setButtonLoading(true);
       setError("");
@@ -1161,31 +1174,44 @@ const MyActivity = () => {
       console.error("Response data:", error.response?.data);
       setError(error.response?.data?.message || "Check-out failed");
     } finally {
-      setLoading(false);
+      setButtonLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (currentStatus?.checkInTime && currentStatus?.checkOutTime) {
+        console.log('Resetting check-in/out times on logout...');
+        await axios.delete("http://localhost:3000/api/attendance/reset", {
+          data: { employeeId: user.uid },
+        });
+      }
+    } catch (error) {
+      console.error("Error during logout reset:", error);
     }
   };
 
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid || hasRun.current) return;
+    hasRun.current = true;
 
-    // Fetch user info, then auto check-in
-    fetchUserData().then(() => handleAutoCheckIn());
-
-    // Auto check-out on page unload (close tab/refresh)
-    const handleBeforeUnload = async () => {
-      await handleAutoCheckOut();
+    const init = async () => {
+      setLoading(true);
+      await fetchUserData();
+      await fetchAttendanceData();
+      setLoading(false);
     };
-    window.addEventListener("beforeunload", handleBeforeUnload);
 
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
+    init();
   }, [user]);
 
-  // Helpers to format date/time
-  const formatTime = dateString =>
-    dateString ? new Date(dateString).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-";
-  const formatDate = dateString => new Date(dateString).toLocaleDateString();
+  useEffect(() => {
+    return () => {
+      if (!user?.uid) {
+        handleLogout();
+      }
+    };
+  }, [user?.uid]);
 
   if (loading && attendanceData.length === 0) {
     return (
@@ -1197,7 +1223,6 @@ const MyActivity = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <Clock className="w-8 h-8 text-primary" />
         <div>
@@ -1206,7 +1231,6 @@ const MyActivity = () => {
         </div>
       </div>
 
-      {/* User Info */}
       <div className="bg-card border border-border rounded-lg p-4">
         <div className="flex items-center gap-3">
           <User className="w-5 h-5 text-muted-foreground" />
@@ -1214,7 +1238,6 @@ const MyActivity = () => {
         </div>
       </div>
 
-      {/* Current Status */}
       <div className="bg-card border border-border rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-4">Today's Status</h2>
         
@@ -1276,7 +1299,7 @@ const MyActivity = () => {
             <LogIn className="w-5 h-5 text-green-600" />
             <div>
               <p className="text-sm text-muted-foreground">Check-in Time</p>
-              <p className="font-medium">{currentStatus ? formatTime(currentStatus.checkInTime) : "-"}</p>
+              <p className="font-medium">{currentStatus?.checkInTime ? formatTime(currentStatus.checkInTime) : "-"}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
@@ -1319,9 +1342,13 @@ const MyActivity = () => {
             {error}
           </div>
         )}
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mt-4">
+            {success}
+          </div>
+        )}
       </div>
 
-      {/* Attendance History */}
       <div className="bg-card border border-border rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-4">Attendance History</h2>
         <div className="overflow-x-auto">
