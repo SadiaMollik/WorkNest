@@ -978,12 +978,10 @@ import { AuthContext } from "../../contexts/AuthContext";
 import axios from "axios";
 
 const MyActivity = () => {
-  const { user } = useContext(AuthContext);
   const [attendanceData, setAttendanceData] = useState([]);
   const [currentStatus, setCurrentStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [userData, setUserData] = useState({});
   const [buttonLoading, setButtonLoading] = useState(false);
   const [selectedWorkMode, setSelectedWorkMode] = useState(null);
@@ -998,25 +996,23 @@ const MyActivity = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/users/${user.uid}`);
+      const response = await axios.get(`http://localhost:3000/api/users/${user.uid}`);
       setUserData(response.data.users);
       return response.data.users;
     } catch (err) {
       console.error("Error fetching user data:", err);
       setError("Failed to load user data");
-      return {};
     }
   };
 
+  // Fetch attendance data
   const fetchAttendanceData = async () => {
     try {
       console.log("🔄 Fetching attendance data for user:", user.uid);
       const response = await axios.get(`http://localhost:3000/api/attendance/${user.uid}`);
       const data = response.data.attendance || [];
-      console.log("📊 Received attendance data:", data);
-      
       setAttendanceData(data);
-      
+
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0);
       const todayTime = today.getTime();
@@ -1126,23 +1122,12 @@ const MyActivity = () => {
         setError(error.response?.data?.message || "Check-in failed");
       }
     } finally {
-      setButtonLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleCheckOut = async () => {
-    if (!user.uid) return;
-
-    if (!currentStatus?.checkInTime) {
-      setError("No check-in record found for today. Please check in first.");
-      return;
-    }
-
-    if (currentStatus?.checkOutTime) {
-      setError("Already checked out today.");
-      return;
-    }
-
+  // Auto check-out
+  const handleAutoCheckOut = async () => {
     try {
       setButtonLoading(true);
       setError("");
@@ -1176,44 +1161,31 @@ const MyActivity = () => {
       console.error("Response data:", error.response?.data);
       setError(error.response?.data?.message || "Check-out failed");
     } finally {
-      setButtonLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      if (currentStatus?.checkInTime && currentStatus?.checkOutTime) {
-        console.log('Resetting check-in/out times on logout...');
-        await axios.delete("http://localhost:3000/api/attendance/reset", {
-          data: { employeeId: user.uid },
-        });
-      }
-    } catch (error) {
-      console.error("Error during logout reset:", error);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!user?.uid || hasRun.current) return;
-    hasRun.current = true;
+    if (!user?.uid) return;
 
-    const init = async () => {
-      setLoading(true);
-      await fetchUserData();
-      await fetchAttendanceData();
-      setLoading(false);
+    // Fetch user info, then auto check-in
+    fetchUserData().then(() => handleAutoCheckIn());
+
+    // Auto check-out on page unload (close tab/refresh)
+    const handleBeforeUnload = async () => {
+      await handleAutoCheckOut();
     };
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
-    init();
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, [user]);
 
-  useEffect(() => {
-    return () => {
-      if (!user?.uid) {
-        handleLogout();
-      }
-    };
-  }, [user?.uid]);
+  // Helpers to format date/time
+  const formatTime = dateString =>
+    dateString ? new Date(dateString).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-";
+  const formatDate = dateString => new Date(dateString).toLocaleDateString();
 
   if (loading && attendanceData.length === 0) {
     return (
@@ -1225,6 +1197,7 @@ const MyActivity = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-3">
         <Clock className="w-8 h-8 text-primary" />
         <div>
@@ -1233,6 +1206,7 @@ const MyActivity = () => {
         </div>
       </div>
 
+      {/* User Info */}
       <div className="bg-card border border-border rounded-lg p-4">
         <div className="flex items-center gap-3">
           <User className="w-5 h-5 text-muted-foreground" />
@@ -1240,6 +1214,7 @@ const MyActivity = () => {
         </div>
       </div>
 
+      {/* Current Status */}
       <div className="bg-card border border-border rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-4">Today's Status</h2>
         
@@ -1301,7 +1276,7 @@ const MyActivity = () => {
             <LogIn className="w-5 h-5 text-green-600" />
             <div>
               <p className="text-sm text-muted-foreground">Check-in Time</p>
-              <p className="font-medium">{currentStatus?.checkInTime ? formatTime(currentStatus.checkInTime) : "-"}</p>
+              <p className="font-medium">{currentStatus ? formatTime(currentStatus.checkInTime) : "-"}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
@@ -1344,13 +1319,9 @@ const MyActivity = () => {
             {error}
           </div>
         )}
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mt-4">
-            {success}
-          </div>
-        )}
       </div>
 
+      {/* Attendance History */}
       <div className="bg-card border border-border rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-4">Attendance History</h2>
         <div className="overflow-x-auto">
@@ -1380,17 +1351,8 @@ const MyActivity = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        {record.workMode === 'office' ? (
-                          <>
-                            <Building2 className="w-4 h-4 text-blue-600" />
-                            <span className="text-blue-700 font-medium">Office</span>
-                          </>
-                        ) : (
-                          <>
-                            <Home className="w-4 h-4 text-purple-600" />
-                            <span className="text-purple-700 font-medium">Remote</span>
-                          </>
-                        )}
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        {formatDate(record.date)}
                       </div>
                     </td>
                     <td className="py-3 px-4">{formatTime(record.checkInTime)}</td>
