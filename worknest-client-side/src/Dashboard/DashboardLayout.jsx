@@ -290,6 +290,10 @@ const DashboardLayout = () => {
               <User size={20} />
               <span className="font-medium">My Profile</span>
             </NavLink>
+            <NavLink to="/dashboard/activity" className={linkClasses}>
+              <User size={20} />
+              <span className="font-medium">My Activity</span>
+            </NavLink>
           </nav>
 
           {/* Help Section */}

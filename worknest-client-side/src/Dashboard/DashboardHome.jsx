@@ -43,7 +43,7 @@ const DashboardHome = () => {
     if (!uid) return;
 
     axios
-      .get(`http://localhost:3000/api/users/${uid}`)
+      .get(`http://localhost:3000/users/${uid}`)
       .then((res) => {
         console.log("Fetched user data:", res.data);
         setUserData(res.data.users);

@@ -13,7 +13,7 @@ const RequireProfileCompleted = ({ children }) => {
     if (!user) return;
 
     axios
-      .get(`http://localhost:3000/api/users/${user.uid}`)
+      .get(`http://localhost:3000/users/${user.uid}`)
       .then((res) => setProfile(res.data.users));
   }, [user]);
 

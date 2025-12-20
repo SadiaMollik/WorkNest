@@ -17,6 +17,7 @@ import CompleteProfile from "../components/CompleteProfile";
 import About from "../pages/About";
 import AllUsers from "../Dashboard/Dashboardcomponents/AllUsers";
 import ManageWorkspace from "../Dashboard/Dashboardcomponents/ManageWorkspace";
+import MyActivity from "../Dashboard/Dashboardcomponents/MyActivity";
 
 export const router = createBrowserRouter([
   {
@@ -91,6 +92,10 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard/profile",
         Component: Profile,
+      },
+      {
+        path: "/dashboard/activity",
+        Component: MyActivity,
       },
     ],
   },
