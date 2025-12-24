@@ -5,7 +5,7 @@ const createWorkspace = async (req, res) => {
     const {
       name,
       type,
-      location, // { building, floor, zone, description }
+      location, 
       capacity,
       amenities,
       status,

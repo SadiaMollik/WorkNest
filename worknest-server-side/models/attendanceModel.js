@@ -4,32 +4,67 @@ const AttendanceSchema = new Schema(
   {
     employeeId: {
       type: String,
-      required: true,
+      required: [true, 'Employee ID is required'],
+      index: true,
     },
     employeeName: {
       type: String,
-      required: true,
+      required: [true, 'Employee name is required'],
+    },
+    date: {
+      type: Date,
+      required: [true, 'Date is required'],
+      index: true,
     },
     checkInTime: {
       type: Date,
-      required: true,
+<<<<<<< HEAD
+      default: null,
+=======
+      default: Date.now,
+>>>>>>> 270bc1ae19b568e3a652a09f65a92d1027cbffc3
     },
     checkOutTime: {
       type: Date,
       default: null,
     },
-    date: {
-      type: Date,
-      required: true,
-    },
     totalHours: {
       type: Number,
       default: 0,
+      min: 0,
+    },
+    workMode: {
+      type: String,
+      enum: ['office', 'remote'],
+      required: [true, 'Work mode is required'],
+      default: 'office'
     },
   },
-  { versionKey: false }
+  { 
+    timestamps: true,
+    versionKey: false 
+  }
 );
 
-const AttendanceModel = model("attendance", AttendanceSchema);
+<<<<<<< HEAD
+// Compound unique index to prevent duplicate check-ins
+AttendanceSchema.index(
+  { employeeId: 1, date: 1 },
+  { 
+    unique: true,
+    name: 'employeeId_date_unique'
+  }
+);
 
-module.exports = AttendanceModel;
+// Additional indexes for queries
+AttendanceSchema.index({ date: -1 });
+AttendanceSchema.index({ employeeId: 1, date: -1 });
+
+=======
+AttendanceSchema.index(
+  { employeeId: 1, date: 1 },
+  { unique: true }
+);
+
+>>>>>>> 270bc1ae19b568e3a652a09f65a92d1027cbffc3
+module.exports = model("attendance", AttendanceSchema);
