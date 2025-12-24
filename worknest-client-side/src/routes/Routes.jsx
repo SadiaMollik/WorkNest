@@ -18,6 +18,7 @@ import About from "../pages/About";
 import AllUsers from "../Dashboard/Dashboardcomponents/AllUsers";
 import ManageWorkspace from "../Dashboard/Dashboardcomponents/ManageWorkspace";
 import MyActivity from "../Dashboard/Dashboardcomponents/MyActivity";
+import ShowActive from "../Dashboard/Dashboardcomponents/Showactive";
 
 export const router = createBrowserRouter([
   {
@@ -96,6 +97,10 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard/activity",
         Component: MyActivity,
+      },
+      {
+        path: "/dashboard/active",
+        Component: ShowActive,
       },
     ],
   },

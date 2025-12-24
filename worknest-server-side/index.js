@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jsonServer = require("json-server");
 const connectDB = require("./config/db");
 
 const PORT = process.env.PORT || 3000;
@@ -8,13 +9,22 @@ const workspaceRoutes = require("./routes/workspaceRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
+const activeRoutes = require("./routes/activeRoutes");
+
+// Debug: Check which routes are undefined
+console.log('🔍 Debug - Route Types:');
+console.log('userRoutes:', typeof userRoutes);
+console.log('workspaceRoutes:', typeof workspaceRoutes);
+console.log('analyticsRoutes:', typeof analyticsRoutes);
+console.log('notificationRoutes:', typeof notificationRoutes);
+console.log('attendanceRoutes:', typeof attendanceRoutes);
+console.log('activeRoutes:', typeof activeRoutes);
 
 const app = express();
 
-// Connect to database
+// Connect to MongoDB
 connectDB();
 
-// Middleware
 // Middleware - CORS with proper configuration
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:3000', '*'],
@@ -40,19 +50,30 @@ app.get('/health', (req, res) => {
   res.json({ success: true, message: 'Server is running' });
 });
 
-// Routes
-app.use(userRoutes);
-app.use("/dashboard", workspaceRoutes);
-app.use("/api", notificationRoutes);
+// ===== MONGODB ROUTES (Custom Backend) =====
+// These handle attendance with MongoDB
 app.use("/api", attendanceRoutes);
-
-// all routes for analytics
-app.use("/dashboard", analyticsRoutes);
-// all routes for notifications
 app.use("/api/notifications", notificationRoutes);
 
+// ===== OTHER CUSTOM ROUTES =====
+app.use(userRoutes);
+app.use("/dashboard", workspaceRoutes);
+app.use("/dashboard", activeRoutes);
+app.use("/dashboard", analyticsRoutes);
+
+// ===== JSON SERVER ROUTES (For Users Data) =====
+// This serves your db.json file for user management
+const jsonRouter = jsonServer.router('db.json');
+const jsonMiddlewares = jsonServer.defaults();
+
+// Use JSON Server for remaining routes (like /users)
+app.use(jsonMiddlewares);
+app.use(jsonRouter);
+
 app.listen(PORT, () => {
-  console.log(`\n✅ Server running on port ${PORT}`);
+  console.log(`\n✅ Unified Server running on port ${PORT}`);
+  console.log(`✅ MongoDB Backend: /api/attendance/*`);
+  console.log(`✅ JSON Server: /users, /bookings, etc.`);
   console.log(`✅ CORS enabled for http://localhost:5173`);
   console.log(`✅ Check health: http://localhost:${PORT}/health\n`);
 });
