@@ -12,7 +12,7 @@ const AllUsers = () => {
   const fetchUsers = async () => {
     try {
       const res = await axios.get("http://localhost:3000/users");
-      setUsers(res.data.users || []);
+      setUsers(res.data.user || []);
     } catch (err) {
       console.error(err);
     } finally {

@@ -7,6 +7,8 @@ const workspaceRoutes = require("./routes/workspaceRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
+const taskRoutes = require("./routes/taskRoutes");
+const port = process.env.PORT || 3000;
 
 const app = express();
 
@@ -27,6 +29,7 @@ app.use("/api", attendanceRoutes);
 app.use("/dashboard", analyticsRoutes);
 // all routes for notifications
 app.use("/api/notifications", notificationRoutes);
+app.use("/dashboard", taskRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

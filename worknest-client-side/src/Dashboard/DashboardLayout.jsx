@@ -67,7 +67,7 @@ const DashboardLayout = () => {
     axios
       .get(`http://localhost:3000/users/${user.uid}`)
       .then((res) => {
-        const u = res.data.users;
+        const u = res.data.user;
         setUserData({
           name: u.name || "",
           companyName: u.companyName || "",
@@ -244,6 +244,10 @@ const DashboardLayout = () => {
             <NavLink to="/dashboard" className={linkClasses} end>
               <LayoutDashboard size={20} />
               <span className="font-medium">Dashboard</span>
+            </NavLink>
+            <NavLink to="/dashboard/nestboard" className={linkClasses} end>
+              <LayoutDashboard size={20} />
+              <span className="font-medium">NestBoard</span>
             </NavLink>
             {role === "employee" && (
               <>

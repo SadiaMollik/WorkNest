@@ -55,7 +55,7 @@ const DeskBooking = () => {
     const fetchDesks = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:3000/dashboard/workspaces"
+          "http://localhost:3000/dashboard/workspace"
         );
 
         const activeDesks = (res.data.workspaces || []).filter(
@@ -157,17 +157,14 @@ Description: ${desk.description || "N/A"}
     tokenClient.requestAccessToken();
   };
 
-  if (loading)
-    return <p className="text-center mt-10">Loading desks...</p>;
+  if (loading) return <p className="text-center mt-10">Loading desks...</p>;
 
   /* ---------------- UI ---------------- */
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold mb-4">Featured Desks</h1>
-        <h2 className="text-lg text-gray-600">
-          Check & Book Your Desk!
-        </h2>
+        <h2 className="text-lg text-gray-600">Check & Book Your Desk!</h2>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
@@ -185,9 +182,7 @@ Description: ${desk.description || "N/A"}
             {/* Status */}
             <p
               className={`mt-2 text-xs font-medium ${
-                desk.status === "active"
-                  ? "text-green-600"
-                  : "text-red-600"
+                desk.status === "active" ? "text-green-600" : "text-red-600"
               }`}
             >
               Status: {desk.status}
