@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Shield, User, Trash2, Ban, CheckCircle, Loader2 } from "lucide-react";
+import { Shield, User, Trash2, Ban, CheckCircle } from "lucide-react";
 import Loading from "../../components/Loading";
 import Swal from "sweetalert2";
 

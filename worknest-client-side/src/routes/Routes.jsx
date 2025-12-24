@@ -18,6 +18,8 @@ import About from "../pages/About";
 import AllUsers from "../Dashboard/Dashboardcomponents/AllUsers";
 import ManageWorkspace from "../Dashboard/Dashboardcomponents/ManageWorkspace";
 import NestBoard from "../Dashboard/Dashboardcomponents/NestBoard";
+import EmployeeSupportChat from "../Dashboard/Dashboardcomponents/EmployeeSupportChat";
+import AdminChatRoom from "../Dashboard/Dashboardcomponents/AdminChatRoom";
 
 export const router = createBrowserRouter([
   {
@@ -84,6 +86,14 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard/my-bookings",
         Component: MyBookings,
+      },
+      {
+        path: "/dashboard/support",
+        Component: EmployeeSupportChat,
+      },
+      {
+        path: "/dashboard/admin/support",
+        Component: AdminChatRoom,
       },
       {
         path: "/dashboard/allusers",

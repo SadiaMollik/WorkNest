@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -149,7 +150,7 @@ Description: ${desk.description || "N/A"}
           resource: event,
         });
 
-        alert("✅ Booking added to Google Calendar");
+        toast.success("Booking added to Google Calendar");
         setActiveDeskId(null);
       },
     });
