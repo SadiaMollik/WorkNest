@@ -31,28 +31,45 @@ const DashboardHome = () => {
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   useEffect(() => {
-    if (!uid) return;
-
-    const fetchData = async () => {
-      try {
-        const userRes = await axios.get(`http://localhost:3000/users/${uid}`);
-        setUserData(userRes.data.user);
-
-        // MOCK weather (replace with OpenWeatherMap later)
-        const mockWeather = {
-          condition: "good", // good | bad | cloudy
-          temp: 26,
-        };
-        setWeather(mockWeather);
-      } catch (err) {
-        console.error(err);
-      } finally {
+    const hour = new Date().getHours();
+    if (hour < 12) setTimeOfDay("morning");
+    else if (hour < 18) setTimeOfDay("afternoon");
+    else setTimeOfDay("evening");
+  
+    if (!uid || !user) return;
+  
+    // Try to fetch user
+    axios
+      .get(`http://localhost:3000/users/${uid}`)
+      .then((res) => {
+        console.log("Fetched user data:", res.data);
+        setUserData(res.data.users);
         setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [uid]);
+      })
+      .catch(async (err) => {
+        console.log("User fetch error:", err);
+        
+        // If 404, create the user
+        if (err.response?.status === 404) {
+          try {
+            const createResponse = await axios.post('http://localhost:3000/users', {
+              uid: user.uid,
+              name: user.displayName || user.email,
+              email: user.email,
+              photoURL: user.photoURL,
+              role: 'employee',
+              profileCompleted: false
+            });
+            
+            console.log("User created:", createResponse.data);
+            setUserData(createResponse.data.user);
+          } catch (createError) {
+            console.error("Error creating user:", createError);
+          }
+        }
+        setLoading(false);
+      });
+  }, [uid, user]);
 
   if (loading || !userData) return <Loading />;
 

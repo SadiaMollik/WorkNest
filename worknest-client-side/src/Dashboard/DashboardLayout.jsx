@@ -246,27 +246,22 @@ const DashboardLayout = () => {
               <LayoutDashboard size={20} />
               <span className="font-medium">Dashboard</span>
             </NavLink>
-            <NavLink to="/dashboard/nestboard" className={linkClasses} end>
-              <LayoutDashboard size={20} />
-              <span className="font-medium">NestBoard</span>
-
-            <NavLink to="/dashboard/desk-booking" className={linkClasses}>
-              <MapPin size={20} />
-              <span className="font-medium">Desk Booking</span>
-            </NavLink>
-            <NavLink to="/dashboard/meeting-rooms" className={linkClasses}>
-              <Calendar size={20} />
-              <span className="font-medium">Meeting Rooms</span>
-            </NavLink>
-            <NavLink to="/dashboard/my-bookings" className={linkClasses}>
-              <Users size={20} />
-              <span className="font-medium">My Bookings</span>
-            </NavLink>
+            
             {role === "employee" && (
-              <NavLink to="/dashboard/support" className={linkClasses}>
-                <ChartBar size={20} />
-                <span className="font-medium">Support</span>
-              </NavLink>
+              <>
+                <NavLink to="/dashboard/desk-booking" className={linkClasses}>
+                  <MapPin size={20} />
+                  <span className="font-medium">Desk Booking</span>
+                </NavLink>
+                <NavLink to="/dashboard/meeting-rooms" className={linkClasses}>
+                  <Calendar size={20} />
+                  <span className="font-medium">Meeting Rooms</span>
+                </NavLink>
+                <NavLink to="/dashboard/my-bookings" className={linkClasses}>
+                  <Users size={20} />
+                  <span className="font-medium">My Bookings</span>
+                </NavLink>
+              </>
             )}
 
             {role === "admin" && (
@@ -301,6 +296,7 @@ const DashboardLayout = () => {
               <User size={20} />
               <span className="font-medium">My Profile</span>
             </NavLink>
+<<<<<<< HEAD
             
             <NavLink to="/dashboard/activity" className={linkClasses}>
               <Activity size={20} />
@@ -311,6 +307,12 @@ const DashboardLayout = () => {
               <Users size={20} />
               <span className="font-medium">Active Status</span>
             </NavLink>
+=======
+            <NavLink to="/dashboard/activity" className={linkClasses}>
+              <User size={20} />
+              <span className="font-medium">My Activity</span>
+            </NavLink>
+>>>>>>> 270bc1ae19b568e3a652a09f65a92d1027cbffc3
           </nav>
 
           {/* Help Section */}
