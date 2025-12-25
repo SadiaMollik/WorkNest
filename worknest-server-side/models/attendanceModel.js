@@ -18,11 +18,7 @@ const AttendanceSchema = new Schema(
     },
     checkInTime: {
       type: Date,
-<<<<<<< HEAD
       default: null,
-=======
-      default: Date.now,
->>>>>>> 270bc1ae19b568e3a652a09f65a92d1027cbffc3
     },
     checkOutTime: {
       type: Date,
@@ -46,7 +42,6 @@ const AttendanceSchema = new Schema(
   }
 );
 
-<<<<<<< HEAD
 // Compound unique index to prevent duplicate check-ins
 AttendanceSchema.index(
   { employeeId: 1, date: 1 },
@@ -60,11 +55,4 @@ AttendanceSchema.index(
 AttendanceSchema.index({ date: -1 });
 AttendanceSchema.index({ employeeId: 1, date: -1 });
 
-=======
-AttendanceSchema.index(
-  { employeeId: 1, date: 1 },
-  { unique: true }
-);
-
->>>>>>> 270bc1ae19b568e3a652a09f65a92d1027cbffc3
 module.exports = model("attendance", AttendanceSchema);
