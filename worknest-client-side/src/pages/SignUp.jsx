@@ -63,11 +63,6 @@ const SignUp = () => {
       );
       const user = userCredential.user;
 
-      // Update user profile with display name
-      await updateUser({
-        displayName: formData.name,
-      });
-
       // Check if user exists in MongoDB (404 is expected for new users)
       let userExists = false;
       try {
