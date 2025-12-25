@@ -112,10 +112,8 @@ const SignUp = () => {
           throw new Error("Failed to create user");
         }
       } else {
-        // if user already exists
-        if (!res.data.user.profileCompleted) {
         // User already exists
-        const userData = createResponse.data.users;
+        const userData = createResponse.data.user;
         if (!userData.profileCompleted) {
           navigate("/complete-profile");
         } else {
@@ -128,7 +126,8 @@ const SignUp = () => {
       let errorMessage = "Signup failed. Please try again.";
 
       if (error.code === "auth/email-already-in-use") {
-        errorMessage = "This email is already registered. Please login instead.";
+        errorMessage =
+          "This email is already registered. Please login instead.";
       } else if (error.code === "auth/weak-password") {
         errorMessage = "Password is too weak. Please use a stronger password.";
       } else if (error.code === "auth/invalid-email") {
@@ -149,18 +148,14 @@ const SignUp = () => {
       const result = await googleSignIn();
       const user = result.user;
 
-      const res = await axios.get(`http://localhost:3000/users/${user.uid}`);
-
-      if (!res.data.user) {
-        await axios.post("http://localhost:3000/users", {
       // Check if user exists
       let userExists = false;
       let userData = null;
       try {
         const res = await axios.get(`http://localhost:3000/users/${user.uid}`);
-        if (res.data.users) {
+        if (res.data.user) {
           userExists = true;
-          userData = res.data.users;
+          userData = res.data.user;
         }
       } catch (err) {
         // 404 is expected for new users
@@ -193,7 +188,6 @@ const SignUp = () => {
           }, 2000);
         }
       } else {
-        res.data.user.profileCompleted
         // User exists, navigate based on profile completion
         userData.profileCompleted
           ? navigate("/dashboard")
@@ -260,7 +254,8 @@ const SignUp = () => {
                     Create Your Account
                   </h1>
                   <p className="text-muted-foreground text-base font-normal pb-8">
-                    Join WorkNest and transform your hybrid workspace management.
+                    Join WorkNest and transform your hybrid workspace
+                    management.
                   </p>
 
                   <form onSubmit={handleSubmit}>
@@ -430,7 +425,6 @@ const SignUp = () => {
                         width={20}
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 48 48"
-                        className="LgbsSe-Bz112c"
                       >
                         <g>
                           <path

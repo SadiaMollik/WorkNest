@@ -109,14 +109,6 @@ const DashboardHome = () => {
         <StatCard icon={Building2} label="Meeting Rooms" value="—" />
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard icon={MapPin} label="Available Desks" value="—" />
-        <StatCard icon={Calendar} label="Your Bookings" value="—" />
-        <StatCard icon={Users} label="Team in Office" value="—" />
-        <StatCard icon={Building2} label="Meeting Rooms" value="—" />
-      </div>
-
       {/* Quick Actions */}
       <div className="bg-card border border-border rounded-xl p-6">
         <h2 className="text-xl font-semibold text-foreground mb-6">

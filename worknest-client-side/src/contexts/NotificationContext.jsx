@@ -1,10 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
-<<<<<<< HEAD
-import { toast } from 'react-toastify';
-=======
 import { toast } from "react-toastify";
->>>>>>> 270bc1ae19b568e3a652a09f65a92d1027cbffc3
 
 // Create the context
 const NotificationContext = createContext();
@@ -13,7 +9,9 @@ const NotificationContext = createContext();
 export const useNotification = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error("useNotification must be used within a NotificationProvider");
+    throw new Error(
+      "useNotification must be used within a NotificationProvider"
+    );
   }
   return context;
 };
@@ -24,12 +22,14 @@ export const NotificationProvider = ({ children }) => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/notifications");
+      const response = await axios.get(
+        "http://localhost:3000/api/notifications"
+      );
       setNotifications(response.data);
     } catch (error) {
       // Handle 404 gracefully - notifications endpoint might not be implemented yet
       if (error.response?.status === 404) {
-        console.log('ℹ️ Notifications endpoint not available yet');
+        console.log("ℹ Notifications endpoint not available yet");
         setNotifications([]);
       } else {
         console.error("Error fetching notifications:", error);

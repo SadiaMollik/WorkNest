@@ -1,7 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  Cloud,
+  Sun,
+  Umbrella,
+  Zap,
+  Thermometer,
+  Wind,
+  RefreshCw,
+  Home,
+  Building2,
+  Coffee,
+  Smile,
+} from "lucide-react";
 
 const CACHE_KEY = "worknest_weather_cache_v1";
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const CACHE_TTL_MS = 10 * 60 * 1000;
 
 function loadCache() {
   try {
@@ -24,14 +37,6 @@ function saveCache(data) {
   }
 }
 
-/**
- * Only recommend WFH for:
- *  - Heatwaves (very high temperature)
- *  - Heavy rain
- *  - Storm / Thunderstorm
- *
- * Everything else => Come to office
- */
 function getWorkSuggestion(data, units) {
   if (!data) return null;
 
@@ -39,50 +44,63 @@ function getWorkSuggestion(data, units) {
   const icon = data.icon || "";
   const desc = (data.description || "").toLowerCase();
 
-  // OpenWeather icon codes:
-  // 11 = thunderstorm
-  // 09 = shower/heavy rain
-  // 10 = rain (can be light/moderate)
   const isStorm = icon.startsWith("11") || desc.includes("thunder");
-
-  // "Heavy rain" detection: icon 09 OR description mentions heavy rain
-  // (09 is usually showers; often used for heavier precipitation)
-  const isHeavyRain =
-    icon.startsWith("09") ||
-    desc.includes("heavy rain") ||
-    desc.includes("very heavy rain") ||
-    desc.includes("extreme rain");
-
-  // Heatwave thresholds:
-  // metric (°C): >= 35
-  // imperial (°F): >= 95
+  const isHeavyRain = icon.startsWith("09") || desc.includes("heavy rain");
   const isHeatwave =
     Number.isFinite(t) && (units === "imperial" ? t >= 95 : t >= 35);
 
   if (isStorm) {
     return {
-      decision: "Work from home",
-      reason: "Stormy weather detected (thunderstorm).",
+      decision: "WFH Recommended",
+      reason: "⚡ Stormy weather! Stay cozy at home today.",
+      icon: Zap,
+      color: "error",
     };
   }
 
   if (isHeavyRain) {
     return {
-      decision: "Work from home",
-      reason: "Heavy rain detected—commuting may be unsafe or delayed.",
+      decision: "WFH Recommended",
+      reason: "☔ Heavy rain alert! Skip the commute puddle-jumping.",
+      icon: Umbrella,
+      color: "error",
     };
   }
 
   if (isHeatwave) {
     return {
-      decision: "Work from home",
-      reason: "Heatwave conditions detected—avoid commuting in extreme heat.",
+      decision: "WFH Recommended",
+      reason: "🔥 Heatwave! Office AC can't compete with your home fan.",
+      icon: Thermometer,
+      color: "warning",
     };
   }
 
+  // Good weather - generate fun motivational messages
+  const isSunny = icon.startsWith("01") || desc.includes("clear");
+  const isPartlyCloudy = icon.startsWith("02") || icon.startsWith("03");
+  const isCool =
+    Number.isFinite(t) &&
+    (units === "imperial" ? t >= 60 && t <= 75 : t >= 15 && t <= 24);
+
+  const messages = [
+    isSunny ? "☀️ Perfect office day! Free vitamin D included!" : null,
+    isPartlyCloudy ? "⛅ Clouds are just nature's mood lighting!" : null,
+    isCool ? "🌬️ Crisp air = fresh ideas! Come brainstorm!" : null,
+    "🏢 Office snacks are waiting! Don't let them get lonely!",
+    "👥 Team needs your awesome energy today!",
+    "💡 Great minds think together (preferably in the office)!",
+    "🚶‍♂️ Your favorite desk misses you!",
+    "☕ Coffee machine is getting lonely!",
+  ].filter(Boolean);
+
+  const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+
   return {
-    decision: "Come to office",
-    reason: "Weather looks fine for commuting today.",
+    decision: "Come to Office",
+    reason: randomMessage || "Great day for office collaboration!",
+    icon: Building2,
+    color: "success",
   };
 }
 
@@ -102,7 +120,7 @@ export default function WeatherWidget() {
 
   useEffect(() => {
     if (!apiKey) {
-      setError("Missing OpenWeather API key (VITE_OPENWEATHER_API_KEY).");
+      setError("Missing OpenWeather API key");
       setLoading(false);
       return;
     }
@@ -115,10 +133,7 @@ export default function WeatherWidget() {
 
       try {
         const res = await fetch(url);
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Weather request failed: ${res.status} ${text}`);
-        }
+        if (!res.ok) throw new Error("Weather fetch failed");
 
         const json = await res.json();
 
@@ -152,139 +167,189 @@ export default function WeatherWidget() {
   }, [apiKey, url]);
 
   const tempUnit = units === "imperial" ? "°F" : "°C";
-  const windUnit = units === "imperial" ? "mph" : "m/s";
-
   const suggestion = getWorkSuggestion(data, units);
+  const SuggestionIcon = suggestion?.icon || Cloud;
+
+  const handleRefresh = () => {
+    localStorage.removeItem(CACHE_KEY);
+    setLoading(true);
+    setData(null);
+  };
 
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm">
+    <div className="bg-card border border-border rounded-xl p-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold">Weather</h3>
-          <p className="text-sm text-gray-500">
+          <h3 className="text-xl font-semibold text-foreground">
+            Today's Weather
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
             {city}
-            {data?.name && data.name.toLowerCase() !== city.toLowerCase()
-              ? ` • ${data.name}`
-              : ""}
+            {data?.name && ` • ${data.name}`}
           </p>
         </div>
 
-        {data?.icon ? (
-          <img
-            alt={data.description || "weather icon"}
-            className="h-12 w-12 shrink-0"
-            src={`https://openweathermap.org/img/wn/${data.icon}@2x.png`}
+        <button
+          onClick={handleRefresh}
+          className="p-2 hover:bg-muted rounded-lg transition-colors"
+          disabled={loading}
+        >
+          <RefreshCw
+            className={`w-5 h-5 text-primary ${loading ? "animate-spin" : ""}`}
           />
-        ) : null}
+        </button>
       </div>
 
-      {/* Body */}
-      <div className="mt-4">
+      {/* Weather Data */}
+      <div className="space-y-6">
         {loading && !data ? (
-          <p className="text-sm text-gray-600">Loading weather…</p>
-        ) : error ? (
-          <div className="text-sm text-red-600">
-            <p>{error}</p>
-            <div className="mt-2">
-              <button
-                onClick={() => {
-                  localStorage.removeItem(CACHE_KEY);
-                  window.location.reload();
-                }}
-                className="rounded-md bg-red-50 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
-              >
-                Retry
-              </button>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">
+                Checking weather...
+              </p>
             </div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-6">
+            <Cloud className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+            <p className="text-error text-sm mb-3">{error}</p>
+            <button onClick={handleRefresh} className="btn btn-outline btn-sm">
+              Try Again
+            </button>
           </div>
         ) : data ? (
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            {/* Left: temp + details */}
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-                <span className="text-4xl font-bold leading-none">
-                  {Number.isFinite(Number(data.temp))
-                    ? `${Math.round(Number(data.temp))}${tempUnit}`
-                    : `—${tempUnit}`}
-                </span>
-
-                {typeof data.feelsLike === "number" && (
-                  <span className="text-sm text-gray-600">
+          <>
+            {/* Temperature & Icon */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-end gap-4">
+                <div className="text-5xl font-bold text-foreground">
+                  {Math.round(data.temp)}
+                  {tempUnit}
+                </div>
+                <div className="pb-2">
+                  <p className="text-sm text-muted-foreground">
                     Feels like {Math.round(data.feelsLike)}
                     {tempUnit}
-                  </span>
-                )}
+                  </p>
+                  <p className="text-sm capitalize text-foreground">
+                    {data.description}
+                  </p>
+                </div>
               </div>
 
-              <p className="mt-1 text-sm capitalize text-gray-700">
-                {data.description || "—"}
-              </p>
-
-              <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-gray-700">
-                <div className="rounded-lg bg-gray-50 p-2">
-                  Humidity:{" "}
-                  <span className="font-medium">
-                    {typeof data.humidity === "number"
-                      ? `${data.humidity}%`
-                      : "—"}
-                  </span>
+              {data.icon && (
+                <div className="w-20 h-20">
+                  <img
+                    src={`https://openweathermap.org/img/wn/${data.icon}@2x.png`}
+                    alt={data.description}
+                    className="w-full h-full"
+                  />
                 </div>
-                <div className="rounded-lg bg-gray-50 p-2">
-                  Wind:{" "}
-                  <span className="font-medium">
-                    {typeof data.wind === "number"
-                      ? `${Number(data.wind).toFixed(1)} ${windUnit}`
-                      : "—"}
-                  </span>
+              )}
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Thermometer className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Humidity</p>
+                  <p className="font-semibold text-foreground">
+                    {data.humidity}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <div className="p-2 bg-secondary/10 rounded-lg">
+                  <Wind className="w-5 h-5 text-secondary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Wind Speed</p>
+                  <p className="font-semibold text-foreground">
+                    {Number(data.wind).toFixed(1)} m/s
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Right: recommendation */}
-            {suggestion ? (
+            {/* Recommendation */}
+            {suggestion && (
               <div
-                className={[
-                  "w-full rounded-lg border p-3 text-sm md:w-[260px]",
-                  suggestion.decision === "Work from home"
-                    ? "border-red-200 bg-red-50"
-                    : "border-green-200 bg-green-50",
-                ].join(" ")}
+                className={`p-4 rounded-lg border ${
+                  suggestion.color === "success"
+                    ? "border-success/20 bg-success/5"
+                    : suggestion.color === "warning"
+                    ? "border-warning/20 bg-warning/5"
+                    : "border-error/20 bg-error/5"
+                }`}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold text-gray-900">Recommendation</p>
-                  <span
-                    className={[
-                      "rounded-full px-2 py-0.5 text-xs font-semibold",
-                      suggestion.decision === "Work from home"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-green-100 text-green-700",
-                    ].join(" ")}
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`p-2 rounded-lg ${
+                      suggestion.color === "success"
+                        ? "bg-success/10 text-success"
+                        : suggestion.color === "warning"
+                        ? "bg-warning/10 text-warning"
+                        : "bg-error/10 text-error"
+                    }`}
                   >
-                    {suggestion.decision}
-                  </span>
+                    <SuggestionIcon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="font-semibold text-foreground">
+                        Workspace Recommendation
+                      </p>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          suggestion.color === "success"
+                            ? "bg-success/10 text-success"
+                            : suggestion.color === "warning"
+                            ? "bg-warning/10 text-warning"
+                            : "bg-error/10 text-error"
+                        }`}
+                      >
+                        {suggestion.decision}
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground">
+                      {suggestion.reason}
+                    </p>
+                    {suggestion.color === "success" && (
+                      <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
+                        <Smile className="w-4 h-4" />
+                        <span>Great day for collaboration!</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <p className="mt-2 text-gray-700">{suggestion.reason}</p>
               </div>
-            ) : null}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-600">No weather data.</p>
-        )}
+            )}
 
-        {/* Footer */}
-        {data?.updatedAt ? (
-          <p className="mt-4 text-xs text-gray-500">
-            Updated{" "}
-            {(() => {
-              const mins = Math.max(
-                0,
-                Math.round((Date.now() - data.updatedAt) / 60000)
-              );
-              return mins <= 1 ? "just now" : `${mins} min ago`;
-            })()}
-          </p>
-        ) : null}
+            {/* Footer */}
+            {data.updatedAt && (
+              <div className="pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  Updated {Math.round((Date.now() - data.updatedAt) / 60000)}{" "}
+                  minutes ago
+                </p>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-6">
+            <Cloud className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+            <p className="text-sm text-muted-foreground">
+              Weather data unavailable
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

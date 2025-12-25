@@ -45,8 +45,8 @@ const MyActivity = () => {
       const response = await axios.get(
         `http://localhost:3000/users/${user.uid}`
       );
-      setUserData(response.data.users);
-      return response.data.users;
+      setUserData(response.data.user);
+      return response.data.user;
     } catch {
       setError("Failed to load user data");
       return {};

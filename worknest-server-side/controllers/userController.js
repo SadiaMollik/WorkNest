@@ -26,17 +26,17 @@ const getSingleUser = async (req, res) => {
   try {
     const { uid } = req.params;
     const singleUser = await User.findOne({ uid });
-    
+
     if (!singleUser) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
-    
+
     res.status(200).json({
       success: true,
-      users: singleUser,
+      user: singleUser,
     });
   } catch (error) {
     console.error("Error fetching user:", error);
@@ -94,17 +94,15 @@ const createUser = async (req, res) => {
     // Send welcome email only for new users
     if (isNewUser) {
       try {
-        const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
-        
-        await sendTemplatedEmail(
-          user.email,
-          'welcomeEmail',
-          {
-            name: user.name || user.email,
-            loginUrl: loginUrl
-          }
-        );
-        
+        const loginUrl = `${
+          process.env.FRONTEND_URL || "http://localhost:5173"
+        }/login`;
+
+        await sendTemplatedEmail(user.email, "welcomeEmail", {
+          name: user.name || user.email,
+          loginUrl: loginUrl,
+        });
+
         console.log(`Welcome email sent to ${user.email}`);
       } catch (emailError) {
         console.error("Error sending welcome email:", emailError.message);
@@ -116,7 +114,9 @@ const createUser = async (req, res) => {
     res.status(200).json({
       success: true,
       user,
-      message: isNewUser ? "User created successfully" : "User updated successfully",
+      message: isNewUser
+        ? "User created successfully"
+        : "User updated successfully",
     });
   } catch (error) {
     console.error("Error creating/updating user:", error);
@@ -158,11 +158,27 @@ const getUserRoleByEmail = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { uid } = req.params;
-    const { name, companyName, department, role, isActive, photoURL, profileCompleted } = req.body;
-    
+    const {
+      name,
+      companyName,
+      department,
+      role,
+      isActive,
+      photoURL,
+      profileCompleted,
+    } = req.body;
+
     const updatedUser = await User.findOneAndUpdate(
       { uid },
-      { name, companyName, department, role, isActive, photoURL, profileCompleted },
+      {
+        name,
+        companyName,
+        department,
+        role,
+        isActive,
+        photoURL,
+        profileCompleted,
+      },
       { new: true }
     );
 
@@ -175,7 +191,7 @@ const updateUser = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      users: updatedUser,
+      user: updatedUser,
     });
   } catch (error) {
     console.error("Error updating user:", error);

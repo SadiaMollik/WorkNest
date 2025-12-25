@@ -89,6 +89,7 @@ const AdminChatRoom = () => {
                 }`}
               >
                 {/* Avatar */}
+                {console.log("employee", employee)}
                 <img
                   src={employee?.photoURL || "/avatar.png"}
                   alt={employee?.name}
