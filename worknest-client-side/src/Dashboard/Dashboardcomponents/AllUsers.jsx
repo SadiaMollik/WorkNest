@@ -11,8 +11,8 @@ const AllUsers = () => {
   // fetch all users
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/users");
-      setUsers(res.data.user || []);
+      const res = await axios.get("http://localhost:3000/api/users");
+      setUsers(res.data.users || []);
     } catch (err) {
       console.error(err);
     } finally {

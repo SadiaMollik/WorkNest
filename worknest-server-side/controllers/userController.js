@@ -35,7 +35,8 @@ const getSingleUser = async (req, res) => {
     }
     
     res.status(200).json({
-      user: singleUser,
+      success: true,
+      users: singleUser,
     });
   } catch (error) {
     console.error("Error fetching user:", error);

@@ -17,9 +17,11 @@ import CompleteProfile from "../components/CompleteProfile";
 import About from "../pages/About";
 import AllUsers from "../Dashboard/Dashboardcomponents/AllUsers";
 import ManageWorkspace from "../Dashboard/Dashboardcomponents/ManageWorkspace";
-import NestBoard from "../Dashboard/Dashboardcomponents/NestBoard";
-import EmployeeSupportChat from "../Dashboard/Dashboardcomponents/EmployeeSupportChat";
-import AdminChatRoom from "../Dashboard/Dashboardcomponents/AdminChatRoom";
+import MyActivity from "../Dashboard/Dashboardcomponents/MyActivity";
+<<<<<<< HEAD
+import ShowActive from "../Dashboard/Dashboardcomponents/Showactive";
+=======
+>>>>>>> 270bc1ae19b568e3a652a09f65a92d1027cbffc3
 
 export const router = createBrowserRouter([
   {
@@ -111,10 +113,13 @@ export const router = createBrowserRouter([
         path: "/dashboard/activity",
         Component: MyActivity,
       },
+<<<<<<< HEAD
       {
         path: "/dashboard/active",
         Component: ShowActive,
       },
+=======
+>>>>>>> 270bc1ae19b568e3a652a09f65a92d1027cbffc3
     ],
   },
 ]);

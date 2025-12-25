@@ -63,16 +63,27 @@ const SignUp = () => {
       );
       const user = userCredential.user;
 
-      // Update user profile with display name
-      await updateUser({
-        displayName: formData.name,
-      });
+      // Check if user exists in MongoDB (404 is expected for new users)
+      let userExists = false;
+      try {
+        const res = await axios.get(`http://localhost:3000/users/${user.uid}`);
+        if (res.data.users) {
+          userExists = true;
+        }
+      } catch (err) {
+        // 404 is expected for new users - this means they don't exist yet
+        if (err.response?.status === 404) {
+          userExists = false;
+        } else {
+          // Only throw if it's a different error
+          console.error("Error checking user:", err);
+          throw err;
+        }
+      }
 
-      const res = await axios.get(`http://localhost:3000/api/users/${user.uid}`);
-
-      if (!res.data.user) {
-        // if first time signup, then create user
-        await axios.post("http://localhost:3000/api/users", {
+      if (!userExists) {
+        // First time signup - create user in MongoDB
+        const createResponse = await axios.post("http://localhost:3000/users", {
           uid: user.uid,
           email: user.email,
           name: "",
@@ -95,8 +106,9 @@ const SignUp = () => {
           throw new Error("Failed to create user");
         }
       } else {
-        // if user already exists
-        if (!res.data.user.profileCompleted) {
+        // User already exists
+        const userData = createResponse.data.users;
+        if (!userData.profileCompleted) {
           navigate("/complete-profile");
         } else {
           navigate("/dashboard");
@@ -129,10 +141,28 @@ const SignUp = () => {
       const result = await googleSignIn();
       const user = result.user;
 
-      const res = await axios.get(`http://localhost:3000/api/users/${user.uid}`);
+      // Check if user exists
+      let userExists = false;
+      let userData = null;
+      try {
+        const res = await axios.get(`http://localhost:3000/users/${user.uid}`);
+        if (res.data.users) {
+          userExists = true;
+          userData = res.data.users;
+        }
+      } catch (err) {
+        // 404 is expected for new users
+        if (err.response?.status === 404) {
+          userExists = false;
+        } else {
+          console.error("Error checking user:", err);
+          throw err;
+        }
+      }
 
-      if (!res.data.user) {
-        await axios.post("http://localhost:3000/users", {
+      if (!userExists) {
+        // Create new user
+        const createResponse = await axios.post("http://localhost:3000/users", {
           uid: user.uid,
           email: user.email,
           name: user.displayName || "",
@@ -151,7 +181,8 @@ const SignUp = () => {
           }, 2000);
         }
       } else {
-        res.data.user.profileCompleted
+        // User exists, navigate based on profile completion
+        userData.profileCompleted
           ? navigate("/dashboard")
           : navigate("/complete-profile");
       }
@@ -366,7 +397,6 @@ const SignUp = () => {
                         width={20}
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 48 48"
-                        className="LgbsSe-Bz112c"
                       >
                         <g>
                           <path
