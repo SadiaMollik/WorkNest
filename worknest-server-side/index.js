@@ -26,7 +26,6 @@ const taskRoutes = require("./routes/taskRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 
 const app = express();
-const server = http.createServer(app);
 
 // Socket.IO
 const io = new Server(server, {
@@ -75,6 +74,7 @@ app.get("/health", (req, res) => {
 // These handle attendance with MongoDB
 app.use("/api", attendanceRoutes);
 app.use("/api/notifications", notificationRoutes);
+<<<<<<< HEAD
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -95,7 +95,13 @@ app.get("/health", (req, res) => {
   res.json({ success: true, message: "Server is running" });
 });
 
-// Routes
+// ===== MONGODB ROUTES (Custom Backend) =====
+// These handle attendance with MongoDB
+app.use("/api", attendanceRoutes);
+app.use("/api/notifications", notificationRoutes);
+<<<<<<< HEAD
+
+// ===== OTHER CUSTOM ROUTES =====
 app.use(userRoutes);
 app.use("/dashboard", workspaceRoutes);
 app.use("/api", notificationRoutes);
@@ -124,6 +130,8 @@ app.use((err, req, res, next) => {
     message: err.message || "Internal server error",
   });
 });
+=======
+>>>>>>> f7782b38bedf3693ff050e7f2017583de336f85f
 
 // JSON SERVER ROUTES (For Users Data)
 // This serves your db.json file for user management
@@ -134,7 +142,17 @@ const jsonMiddlewares = jsonServer.defaults();
 app.use(jsonMiddlewares);
 app.use(jsonRouter);
 
+<<<<<<< HEAD
 // server run
 server.listen(PORT, () => {
   console.log(`Server + Socket.IO running on port ${PORT}`);
 });
+=======
+app.listen(PORT, () => {
+  console.log(`\n✅ Unified Server running on port ${PORT}`);
+  console.log(`✅ MongoDB Backend: /api/attendance/*`);
+  console.log(`✅ JSON Server: /users, /bookings, etc.`);
+  console.log(`✅ CORS enabled for http://localhost:5173`);
+  console.log(`✅ Check health: http://localhost:${PORT}/health\n`);
+});
+>>>>>>> f7782b38bedf3693ff050e7f2017583de336f85f

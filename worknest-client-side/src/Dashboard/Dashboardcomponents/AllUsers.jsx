@@ -27,7 +27,7 @@ const AllUsers = () => {
   // toggle block/unblock
   const toggleBlockUser = async (uid, isActive) => {
     try {
-      await axios.put(`http://localhost:3000/users/${uid}`, {
+      await axios.put(`http://localhost:3000/api/users/${uid}`, {
         isActive: !isActive,
       });
       fetchUsers();
@@ -39,7 +39,7 @@ const AllUsers = () => {
   // change role
   const changeRole = async (uid, role) => {
     try {
-      await axios.put(`http://localhost:3000/users/${uid}`, {
+      await axios.put(`http://localhost:3000/api/users/${uid}`, {
         role: role === "admin" ? "employee" : "admin",
       });
       fetchUsers();
@@ -63,7 +63,7 @@ const AllUsers = () => {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await axios.delete(`http://localhost:3000/users/${id}`);
+      const res = await axios.delete(`http://localhost:3000/api/users/${id}`);
 
       if (res.data.success) {
         Swal.fire("Deleted!", "User has been deleted.", "success");
