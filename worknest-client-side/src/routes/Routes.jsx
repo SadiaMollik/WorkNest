@@ -19,12 +19,9 @@ import AllUsers from "../Dashboard/Dashboardcomponents/AllUsers";
 import ManageWorkspace from "../Dashboard/Dashboardcomponents/ManageWorkspace";
 import MyActivity from "../Dashboard/Dashboardcomponents/MyActivity";
 import ShowActive from "../Dashboard/Dashboardcomponents/Showactive";
-<<<<<<< HEAD
 import NestBoard from "../Dashboard/Dashboardcomponents/NestBoard";
 import EmployeeSupportChat from "../Dashboard/Dashboardcomponents/EmployeeSupportChat";
 import AdminChatRoom from "../Dashboard/Dashboardcomponents/AdminChatRoom";
-=======
->>>>>>> f7782b38bedf3693ff050e7f2017583de336f85f
 
 export const router = createBrowserRouter([
   {

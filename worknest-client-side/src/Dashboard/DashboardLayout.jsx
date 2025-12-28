@@ -246,7 +246,6 @@ const DashboardLayout = () => {
               <LayoutDashboard size={20} />
               <span className="font-medium">Dashboard</span>
             </NavLink>
-<<<<<<< HEAD
 
             <NavLink to="/dashboard/nestboard" className={linkClasses} end>
               <LayoutDashboard size={20} />
@@ -265,9 +264,6 @@ const DashboardLayout = () => {
               <Users size={20} />
               <span className="font-medium">My Bookings</span>
             </NavLink>
-=======
-            
->>>>>>> f7782b38bedf3693ff050e7f2017583de336f85f
             {role === "employee" && (
               <>
                 <NavLink to="/dashboard/desk-booking" className={linkClasses}>
@@ -317,11 +313,6 @@ const DashboardLayout = () => {
               <User size={20} />
               <span className="font-medium">My Profile</span>
             </NavLink>
-<<<<<<< HEAD
-
-=======
-            
->>>>>>> f7782b38bedf3693ff050e7f2017583de336f85f
             <NavLink to="/dashboard/activity" className={linkClasses}>
               <Activity size={20} />
               <span className="font-medium">My Activity</span>
