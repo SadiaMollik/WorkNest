@@ -44,23 +44,24 @@ const getLatestAnalytics = async (req, res) => {
     const endDate = new Date(days[days.length - 1]);
     endDate.setHours(23, 59, 59, 999);
 
-    // Desk bookings grouped by day
+    // Desk bookings (count unique desks used per day)
     const deskBookings = await Booking.find({
       status: "confirmed",
       workspaceId: { $in: deskIds },
       startAt: { $lte: endDate },
       endAt: { $gte: startDate },
-    }).select("startAt");
+    }).select("startAt workspaceId");
 
-    const deskBookedByDay = {};
+    const deskUsedSetByDay = {};
     deskBookings.forEach((b) => {
       const day = b.startAt.toISOString().slice(0, 10);
-      deskBookedByDay[day] = (deskBookedByDay[day] || 0) + 1;
+      if (!deskUsedSetByDay[day]) deskUsedSetByDay[day] = new Set();
+      deskUsedSetByDay[day].add(String(b.workspaceId));
     });
 
     const deskUsageByDay = days.map((day) => ({
       day,
-      booked: deskBookedByDay[day] || 0,
+      booked: deskUsedSetByDay[day] ? deskUsedSetByDay[day].size : 0,
       total: totalDesks,
     }));
 
@@ -83,7 +84,7 @@ const getLatestAnalytics = async (req, res) => {
       meetings: meetingCountByDay[day] || 0,
     }));
 
-    // Attendance split by day and mode
+    // Attendance split by day, mode
     const attendanceDocs = await Attendance.find({ day: { $in: days } }).select(
       "day mode"
     );

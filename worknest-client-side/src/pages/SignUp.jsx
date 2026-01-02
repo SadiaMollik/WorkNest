@@ -1,20 +1,22 @@
 import { use, useState } from "react";
-import { Eye, EyeOff, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, Mail } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { AuthContext } from "../contexts/AuthContext";
+import { useNotification } from "../contexts/NotificationContext";
 
 const SignUp = () => {
   const { createUser, updateUser, googleSignIn } = use(AuthContext);
+  const { showNotification } = useNotification();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-
     agreeToTerms: false,
   });
 
@@ -23,14 +25,13 @@ const SignUp = () => {
       ...prev,
       [field]: value,
     }));
-    // Clear error when user starts typing
     if (error) setError("");
   };
 
   const passwordRequirements = [
     { text: "At least 6 characters", met: formData.password.length >= 6 },
     { text: "One uppercase letter", met: /[A-Z]/.test(formData.password) },
-    { text: "One number", met: /[0-6]/.test(formData.password) },
+    { text: "One number", met: /[0-9]/.test(formData.password) },
     {
       text: "One special character",
       met: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
@@ -45,7 +46,6 @@ const SignUp = () => {
       return;
     }
 
-    // Validate password requirements
     const isPasswordValid = passwordRequirements.every((req) => req.met);
     if (!isPasswordValid) {
       setError("Please meet all password requirements");
@@ -63,26 +63,52 @@ const SignUp = () => {
       );
       const user = userCredential.user;
 
-      // Update user profile with display name
-      await updateUser({
-        displayName: formData.name,
-      });
+      // Check if user exists in MongoDB (404 is expected for new users)
+      let userExists = false;
+      try {
+        const res = await axios.get(`http://localhost:3000/users/${user.uid}`);
+        if (res.data.user) {
+          userExists = true;
+        }
+      } catch (err) {
+        // 404 is expected for new users - this means they don't exist yet
+        if (err.response?.status === 404) {
+          userExists = false;
+        } else {
+          // Only throw if it's a different error
+          console.error("Error checking user:", err);
+          throw err;
+        }
+      }
 
-      const res = await axios.get(`http://localhost:3000/users/${user.uid}`);
-
-      if (!res.data.users) {
-        // if first time signup, then create user
-        await axios.post("http://localhost:3000/users", {
+      if (!userExists) {
+        // First time signup - create user in MongoDB
+        const createResponse = await axios.post("http://localhost:3000/users", {
           uid: user.uid,
           email: user.email,
-          name: user.displayName || "",
+          name: "",
           profileCompleted: false,
         });
 
-        navigate("/complete-profile");
+        // Check if user was created successfully
+        if (createResponse.data.success) {
+          setEmailSent(true);
+          showNotification(
+            "🎉 Account created! Check your email for confirmation.",
+            "success"
+          );
+
+          // Navigate after short delay to show the success message
+          setTimeout(() => {
+            navigate("/complete-profile");
+          }, 2000);
+        } else {
+          throw new Error("Failed to create user");
+        }
       } else {
-        // if user already exists
-        if (!res.data.users.profileCompleted) {
+        // User already exists
+        const userData = createResponse.data.user;
+        if (!userData.profileCompleted) {
           navigate("/complete-profile");
         } else {
           navigate("/dashboard");
@@ -91,7 +117,21 @@ const SignUp = () => {
     } catch (error) {
       console.error("Signup error:", error);
 
-      setError("Signup failed");
+      let errorMessage = "Signup failed. Please try again.";
+
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage =
+          "This email is already registered. Please login instead.";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password is too weak. Please use a stronger password.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email address.";
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      setError(errorMessage);
+      showNotification(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -102,10 +142,28 @@ const SignUp = () => {
       const result = await googleSignIn();
       const user = result.user;
 
-      const res = await axios.get(`http://localhost:3000/users/${user.uid}`);
+      // Check if user exists
+      let userExists = false;
+      let userData = null;
+      try {
+        const res = await axios.get(`http://localhost:3000/users/${user.uid}`);
+        if (res.data.user) {
+          userExists = true;
+          userData = res.data.user;
+        }
+      } catch (err) {
+        // 404 is expected for new users
+        if (err.response?.status === 404) {
+          userExists = false;
+        } else {
+          console.error("Error checking user:", err);
+          throw err;
+        }
+      }
 
-      if (!res.data.users) {
-        await axios.post("http://localhost:3000/users", {
+      if (!userExists) {
+        // Create new user
+        const createResponse = await axios.post("http://localhost:3000/users", {
           uid: user.uid,
           email: user.email,
           name: user.displayName || "",
@@ -113,14 +171,25 @@ const SignUp = () => {
           profileCompleted: false,
         });
 
-        navigate("/complete-profile");
+        if (createResponse.data.success) {
+          showNotification(
+            "🎉 Account created with Google! Check your email.",
+            "success"
+          );
+
+          setTimeout(() => {
+            navigate("/complete-profile");
+          }, 2000);
+        }
       } else {
-        res.data.users.profileCompleted
+        // User exists, navigate based on profile completion
+        userData.profileCompleted
           ? navigate("/dashboard")
           : navigate("/complete-profile");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Google login error:", error);
+      showNotification("Google login failed. Please try again.", "error");
     }
   };
 
@@ -152,6 +221,21 @@ const SignUp = () => {
               {/* Right Column: Sign Up Form */}
               <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
                 <div className="w-full max-w-md">
+                  {/* Success Message */}
+                  {emailSent && (
+                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start space-x-3">
+                      <Mail className="w-5 h-5 text-green-600 mt-0.5" />
+                      <div>
+                        <p className="text-green-800 text-sm font-medium">
+                          Welcome email sent!
+                        </p>
+                        <p className="text-green-600 text-xs mt-1">
+                          Check your inbox at {formData.email}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Error Message */}
                   {error && (
                     <div className="mb-6 p-4 bg-error/10 border border-error/20 rounded-lg">
@@ -163,8 +247,7 @@ const SignUp = () => {
                     Create Your Account
                   </h1>
                   <p className="text-muted-foreground text-base font-normal pb-8">
-                    Join WorkNest and transform your hybrid workspace
-                    management.
+                    Join WorkNest and transform your hybrid workspace management.
                   </p>
 
                   <form onSubmit={handleSubmit}>
@@ -306,6 +389,7 @@ const SignUp = () => {
                     </div>
                     <button
                       onClick={handleGoogleLogin}
+                      type="button"
                       className="w-full font-semibold py-4 rounded-lg transition-colors duration-200 mt-2 h-14 shadow-lg hover:shadow-xl flex gap-2 items-center justify-center"
                     >
                       <svg
@@ -314,7 +398,6 @@ const SignUp = () => {
                         width={20}
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 48 48"
-                        class="LgbsSe-Bz112c"
                       >
                         <g>
                           <path

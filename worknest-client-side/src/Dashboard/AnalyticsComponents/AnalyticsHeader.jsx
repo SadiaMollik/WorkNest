@@ -14,7 +14,7 @@ const AnalyticsHeader = () => {
       </div>
 
       {/* Simple filters (UI only for now) */}
-      <div className="flex gap-3">
+      {/* <div className="flex gap-3">
         <select className="px-3 py-2 rounded-lg border border-border bg-background text-sm">
           <option>This week</option>
           <option>Last week</option>
@@ -26,7 +26,7 @@ const AnalyticsHeader = () => {
           <option>Marketing</option>
           <option>Sales</option>
         </select>
-      </div>
+      </div> */}
     </div>
   );
 };

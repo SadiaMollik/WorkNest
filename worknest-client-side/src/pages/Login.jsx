@@ -21,7 +21,7 @@ const Login = () => {
       showNotification("LOGIN SUCCESSFULLY", "success");
       setTimeout(() => {
         navigate(location?.state || "/");
-      }, 2000); // Delay navigation to allow toast to show
+      }, 1000); // Delay navigation to allow toast to show
     } catch (error) {
       console.error("Sign-in failed:", error);
     }

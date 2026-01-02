@@ -3,7 +3,7 @@ import {
   Linkedin,
   Target,
   Eye,
-  Users,
+  User,
   Briefcase,
   Building2,
   Sparkles,
@@ -174,7 +174,7 @@ const About = () => {
                         alt={dev.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       /> */}
-                      <Users className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <User className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                     </div>
 
                     {/* Info */}

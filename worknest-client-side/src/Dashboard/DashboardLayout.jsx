@@ -1,6 +1,8 @@
 import { useState, useEffect, useContext } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router";
+
 import {
+  Activity,
   Menu,
   X,
   LayoutDashboard,
@@ -17,6 +19,7 @@ import {
   ChevronDown,
   HelpCircle,
   PlusSquare,
+  ChartBar,
 } from "lucide-react";
 import { AuthContext } from "../contexts/AuthContext";
 import useUserRole from "../hooks/useUserRole";
@@ -58,8 +61,6 @@ const DashboardLayout = () => {
     }
   }, [user, loading, navigate]);
 
-  // Mock user data - replace with actual data from your context
-
   // Fetch user data
   useEffect(() => {
     if (!user?.uid) return;
@@ -67,7 +68,7 @@ const DashboardLayout = () => {
     axios
       .get(`http://localhost:3000/users/${user.uid}`)
       .then((res) => {
-        const u = res.data.users;
+        const u = res.data.user;
         setUserData({
           name: u.name || "",
           companyName: u.companyName || "",
@@ -135,9 +136,9 @@ const DashboardLayout = () => {
                 className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted transition-colors"
               >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-                  {userData.avatar ? (
+                  {userData.photoURL ? (
                     <img
-                      src={userData.avatar}
+                      src={userData.photoURL}
                       alt={userData.name}
                       className="w-full h-full rounded-full object-cover"
                     />
@@ -245,6 +246,24 @@ const DashboardLayout = () => {
               <LayoutDashboard size={20} />
               <span className="font-medium">Dashboard</span>
             </NavLink>
+
+            <NavLink to="/dashboard/nestboard" className={linkClasses} end>
+              <LayoutDashboard size={20} />
+              <span className="font-medium">NestBoard</span>
+            </NavLink>
+
+            <NavLink to="/dashboard/desk-booking" className={linkClasses}>
+              <MapPin size={20} />
+              <span className="font-medium">Desk Booking</span>
+            </NavLink>
+            <NavLink to="/dashboard/meeting-rooms" className={linkClasses}>
+              <Calendar size={20} />
+              <span className="font-medium">Meeting Rooms</span>
+            </NavLink>
+            <NavLink to="/dashboard/my-bookings" className={linkClasses}>
+              <Users size={20} />
+              <span className="font-medium">My Bookings</span>
+            </NavLink>
             {role === "employee" && (
               <>
                 <NavLink to="/dashboard/desk-booking" className={linkClasses}>
@@ -283,6 +302,10 @@ const DashboardLayout = () => {
                   <BarChart3 size={20} />
                   <span className="font-medium">Analytics</span>
                 </NavLink>
+                <NavLink to="/dashboard/admin/support" className={linkClasses}>
+                  <ChartBar size={20} />
+                  <span className="font-medium">Support</span>
+                </NavLink>
               </>
             )}
 
@@ -290,26 +313,39 @@ const DashboardLayout = () => {
               <User size={20} />
               <span className="font-medium">My Profile</span>
             </NavLink>
+            <NavLink to="/dashboard/activity" className={linkClasses}>
+              <Activity size={20} />
+              <span className="font-medium">My Activity</span>
+            </NavLink>
+
+            <NavLink to="/dashboard/active" className={linkClasses}>
+              <Users size={20} />
+              <span className="font-medium">Active Status</span>
+            </NavLink>
           </nav>
 
           {/* Help Section */}
-          <div className="mt-8 p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/10">
-            <div className="flex items-start space-x-3 mb-3">
-              <HelpCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Need help?
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Our support team is here 24/7
-                </p>
+          {role === "employee" && (
+            <div className="mt-8 p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/10">
+              <div className="flex items-start space-x-3 mb-3">
+                <HelpCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Need help?
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Our support team is here 24/7
+                  </p>
+                </div>
               </div>
+              <NavLink
+                to={"/dashboard/support"}
+                className="flex items-center justify-center w-full py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                Contact Support
+              </NavLink>
             </div>
-            <button className="flex items-center justify-center w-full py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-              Contact Support
-            </button>
-          </div>
-
+          )}
           {/* Logout Button */}
           <div className="mt-8 pt-6 border-t border-border">
             <button

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Shield, User, Trash2, Ban, CheckCircle, Loader2 } from "lucide-react";
+import { Shield, User, Trash2, Ban, CheckCircle } from "lucide-react";
 import Loading from "../../components/Loading";
 import Swal from "sweetalert2";
 
@@ -12,7 +12,7 @@ const AllUsers = () => {
   const fetchUsers = async () => {
     try {
       const res = await axios.get("http://localhost:3000/users");
-      setUsers(res.data.users || []);
+      setUsers(res.data.user || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -27,7 +27,7 @@ const AllUsers = () => {
   // toggle block/unblock
   const toggleBlockUser = async (uid, isActive) => {
     try {
-      await axios.put(`http://localhost:3000/users/${uid}`, {
+      await axios.put(`http://localhost:3000/api/users/${uid}`, {
         isActive: !isActive,
       });
       fetchUsers();
@@ -39,7 +39,7 @@ const AllUsers = () => {
   // change role
   const changeRole = async (uid, role) => {
     try {
-      await axios.put(`http://localhost:3000/users/${uid}`, {
+      await axios.put(`http://localhost:3000/api/users/${uid}`, {
         role: role === "admin" ? "employee" : "admin",
       });
       fetchUsers();
@@ -63,7 +63,7 @@ const AllUsers = () => {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await axios.delete(`http://localhost:3000/users/${id}`);
+      const res = await axios.delete(`http://localhost:3000/api/users/${id}`);
 
       if (res.data.success) {
         Swal.fire("Deleted!", "User has been deleted.", "success");

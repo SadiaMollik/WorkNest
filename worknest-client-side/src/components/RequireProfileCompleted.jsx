@@ -14,7 +14,7 @@ const RequireProfileCompleted = ({ children }) => {
 
     axios
       .get(`http://localhost:3000/users/${user.uid}`)
-      .then((res) => setProfile(res.data.users));
+      .then((res) => setProfile(res.data.user));
   }, [user]);
 
   if (!profile) return <Loading />;
@@ -23,10 +23,13 @@ const RequireProfileCompleted = ({ children }) => {
   if (!profile.profileCompleted) {
     return <Navigate to="/complete-profile" />;
   }
+
+  // Show blocked screen if user is not active
   if (!profile.isActive) {
     return <BlockedProfile />;
   }
 
+  // All checks passed, render children
   return children;
 };
 

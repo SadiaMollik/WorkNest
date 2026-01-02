@@ -5,7 +5,7 @@ import DeskUsageChart from "../AnalyticsComponents/DeskUsageChart";
 import SpaceTypePieChart from "../AnalyticsComponents/SpaceTypePieChart";
 import MeetingFrequencyChart from "../AnalyticsComponents/MeetingFrequencyChart";
 import AttendanceTrendChart from "../AnalyticsComponents/AttendanceTrendChart";
-import OfficeLocationMap from "../AnalyticsComponents/OfficeLocationMap"; // 👈 NEW
+import OfficeLocationMap from "../AnalyticsComponents/OfficeLocationMap"; // if you need it
 
 const Analytics = () => {
   const [analytics, setAnalytics] = useState(null);
@@ -19,7 +19,7 @@ const Analytics = () => {
         setLoading(true);
         setError("");
 
-        const res = await fetch("http://localhost:3000/dashboard/analytics/latest");
+        const res = await fetch("http://localhost:3000/api/dashboard/analytics/latest");
         const data = await res.json();
 
         if (!res.ok || !data.success) {
@@ -30,9 +30,7 @@ const Analytics = () => {
         setSummary(data.summary);
       } catch (err) {
         console.error("Analytics fetch error:", err);
-        setError(
-          err.message || "Something went wrong while fetching analytics."
-        );
+        setError(err.message || "Something went wrong while fetching analytics.");
       } finally {
         setLoading(false);
       }
@@ -41,100 +39,37 @@ const Analytics = () => {
     fetchAnalytics();
   }, []);
 
+  // Fallback to empty arrays if analytics is not loaded
   const deskUsageData = analytics?.deskUsageByDay || [];
   const meetingFrequencyData = analytics?.meetingFrequencyByDay || [];
   const attendanceData = analytics?.attendanceByDay || [];
   const spaceTypeData = analytics?.spaceTypeDistribution || [];
-  const officeLocation = analytics?.officeLocation; // 👈 NEW
+  const officeLocation = analytics?.officeLocation;
 
   const { avgDeskOccupancy, totalMeetings, avgInOffice, busiestDay } =
     useMemo(() => {
       if (summary) return summary;
 
-      if (!deskUsageData.length) {
-        return {
-          avgDeskOccupancy: 0,
-          totalMeetings: 0,
-          avgInOffice: 0,
-          busiestDay: "-",
-        };
-      }
-
-      const avgDeskOccupancyCalc =
-        Math.round(
-          (deskUsageData.reduce((sum, d) => sum + (d.booked || 0), 0) /
-            deskUsageData.reduce((sum, d) => sum + (d.total || 0), 0)) *
-            100
-        ) || 0;
-
-      const totalMeetingsCalc =
-        meetingFrequencyData.reduce((sum, d) => sum + (d.meetings || 0), 0) ||
-        0;
-
-      const avgInOfficeCalc =
-        Math.round(
-          attendanceData.reduce((sum, d) => sum + (d.office || 0), 0) /
-            (attendanceData.length || 1)
-        ) || 0;
-
-      const busiestDayCalc =
-        deskUsageData
-          .slice()
-          .sort((a, b) => (b.booked || 0) - (a.booked || 0))[0]?.day ?? "-";
-
       return {
-        avgDeskOccupancy: avgDeskOccupancyCalc,
-        totalMeetings: totalMeetingsCalc,
-        avgInOffice: avgInOfficeCalc,
-        busiestDay: busiestDayCalc,
+        avgDeskOccupancy: 0,
+        totalMeetings: 0,
+        avgInOffice: 0,
+        busiestDay: "-",
       };
-    }, [summary, deskUsageData, meetingFrequencyData, attendanceData]);
+    }, [summary]);
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <p className="text-gray-600">Loading analytics...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <p className="text-red-500">Error: {error}</p>
-      </div>
-    );
-  }
+  if (loading) return <p>Loading analytics...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Top header & filters */}
+    <div>
       <AnalyticsHeader />
-
-      {/* Summary cards */}
-      <SummaryCards
-        avgDeskOccupancy={avgDeskOccupancy}
-        totalMeetings={totalMeetings}
-        avgInOffice={avgInOffice}
-        busiestDay={busiestDay}
-      />
-
-      {/* First row: desk usage + pie chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <DeskUsageChart data={deskUsageData} />
-        <SpaceTypePieChart data={spaceTypeData} />
-      </div>
-
-      {/* Second row: meeting frequency + attendance trend */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <MeetingFrequencyChart data={meetingFrequencyData} />
-        <AttendanceTrendChart data={attendanceData} />
-      </div>
-
-      {/* Third row: office location map */}
-      <div className="grid grid-cols-1">
-        <OfficeLocationMap officeLocation={officeLocation} />
-      </div>
+      <SummaryCards />
+      <DeskUsageChart data={deskUsageData} />
+      <MeetingFrequencyChart data={meetingFrequencyData} />
+      <AttendanceTrendChart data={attendanceData} />
+      <SpaceTypePieChart data={spaceTypeData} />
+      {officeLocation && <OfficeLocationMap location={officeLocation} />}
     </div>
   );
 };
